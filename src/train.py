@@ -7,6 +7,9 @@ from sklearn.metrics import mean_squared_error, r2_score
 # Load dataset
 df = pd.read_csv("data/housing.csv")
 
+# Remove rows with missing values
+df = df.dropna()
+
 # Dataset size
 print("Dataset size:", df.shape[0])
 
@@ -14,10 +17,10 @@ print("Dataset size:", df.shape[0])
 X = df.drop("median_house_value", axis=1)
 y = df["median_house_value"]
 
-# Handle categorical column
+# Convert categorical column to numeric
 X = pd.get_dummies(X)
 
-# Train test split
+# Train-test split
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
