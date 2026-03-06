@@ -2,7 +2,7 @@ name: ML Pipeline
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [main, master]
 
 jobs:
   train:
@@ -26,27 +26,31 @@ jobs:
     - name: Install Dependencies
       run: |
         pip install --upgrade pip
-        pip install dvc[s3]
-        pip install pandas scikit-learn
+        pip install dvc[s3] pandas scikit-learn numpy
 
-    - name: Pull Dataset from S3 (DVC)
+    - name: Pull Dataset from S3
       run: |
         dvc pull
 
-    - name: Train Model
+    - name: Run Training
       run: |
-        python src/train.py
+        python src/train.py > metrics.txt
 
-    - name: Record Dataset Size
+    - name: Write Results to GitHub Summary
       run: |
-        echo "Dataset size:" > summary.txt
-        wc -l data/housing.csv >> summary.txt
+        echo "## Result Version 1 - 2022BCS0001" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Dataset Size:" >> $GITHUB_STEP_SUMMARY
+        wc -l data/housing.csv >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Training Metrics:" >> $GITHUB_STEP_SUMMARY
+        cat metrics.txt >> $GITHUB_STEP_SUMMARY
 
-    - name: Upload Results Artifact
+    - name: Upload Metrics Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: training-results
-        path: summary.txt
+        name: training-metrics
+        path: metrics.txt
 
     - name: Build Docker Image
       run: |
